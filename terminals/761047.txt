@@ -1,0 +1,95 @@
+---
+pid: 30924
+cwd: "C:\\Users\\bruck\\.cursor\\projects\\shared_backend"
+command: "cd \"c:\\Users\\bruck\\.cursor\\projects\\c-Users-bruck-cursor-projects-shared-backend\" && npm install && npm run build"
+started_at: 2026-05-01T21:19:29.397Z
+running_for_ms: 229877   
+---
+npm warn deprecated uuid@8.3.2: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
+npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+npm warn deprecated glob@10.4.5: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+npm warn deprecated uuid@9.0.1: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
+
+added 738 packages, and audited 739 packages in 3m
+
+133 packages are looking for funding
+  run `npm fund` for details
+
+23 vulnerabilities (4 low, 13 moderate, 6 high)
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force
+
+Run `npm audit` for details.
+
+> equipment-rental-api@1.0.0 build
+> nest build
+
+[96msrc/auth/auth.module.ts[0m:[93m3[0m:[93m32[0m - [91merror[0m[90m TS2307: [0mCannot find module '@nestjs/passport' or its corresponding type declarations.
+
+[7m3[0m import { PassportModule } from '@nestjs/passport';
+[7m [0m [91m                               ~~~~~~~~~~~~~~~~~~[0m
+[96msrc/auth/jwt-auth.guard.ts[0m:[93m3[0m:[93m27[0m - [91merror[0m[90m TS2307: [0mCannot find module '@nestjs/passport' or its corresponding type declarations.
+
+[7m3[0m import { AuthGuard } from '@nestjs/passport';
+[7m [0m [91m                          ~~~~~~~~~~~~~~~~~~[0m
+[96msrc/auth/jwt.strategy.ts[0m:[93m3[0m:[93m34[0m - [91merror[0m[90m TS2307: [0mCannot find module '@nestjs/passport' or its corresponding type declarations.
+
+[7m3[0m import { PassportStrategy } from '@nestjs/passport';
+[7m [0m [91m                                 ~~~~~~~~~~~~~~~~~~[0m
+[96msrc/payments/payments.service.ts[0m:[93m20[0m:[93m23[0m - [91merror[0m[90m TS2304: [0mCannot find name 'Payment'.
+
+[7m20[0m     @InjectRepository(Payment)
+[7m  [0m [91m                      ~~~~~~~[0m
+[96msrc/payments/payments.service.ts[0m:[93m21[0m:[93m43[0m - [91merror[0m[90m TS2304: [0mCannot find name 'Payment'.
+
+[7m21[0m     private readonly payments: Repository<Payment>,
+[7m  [0m [91m                                          ~~~~~~~[0m
+[96msrc/payments/payments.service.ts[0m:[93m22[0m:[93m23[0m - [91merror[0m[90m TS2304: [0mCannot find name 'Deposit'.
+
+[7m22[0m     @InjectRepository(Deposit)
+[7m  [0m [91m                      ~~~~~~~[0m
+[96msrc/payments/payments.service.ts[0m:[93m23[0m:[93m43[0m - [91merror[0m[90m TS2304: [0mCannot find name 'Deposit'.
+
+[7m23[0m     private readonly deposits: Repository<Deposit>,
+[7m  [0m [91m                                          ~~~~~~~[0m
+[96msrc/payments/payments.service.ts[0m:[93m24[0m:[93m23[0m - [91merror[0m[90m TS2304: [0mCannot find name 'Rental'.
+
+[7m24[0m     @InjectRepository(Rental)
+[7m  [0m [91m                      ~~~~~~[0m
+[96msrc/payments/payments.service.ts[0m:[93m25[0m:[93m42[0m - [91merror[0m[90m TS2304: [0mCannot find name 'Rental'.
+
+[7m25[0m     private readonly rentals: Repository<Rental>,
+[7m  [0m [91m                                         ~~~~~~[0m
+[96msrc/payments/payments.service.ts[0m:[93m26[0m:[93m23[0m - [91merror[0m[90m TS2304: [0mCannot find name 'Business'.
+
+[7m26[0m     @InjectRepository(Business)
+[7m  [0m [91m                      ~~~~~~~~[0m
+[96msrc/payments/payments.service.ts[0m:[93m27[0m:[93m45[0m - [91merror[0m[90m TS2304: [0mCannot find name 'Business'.
+
+[7m27[0m     private readonly businesses: Repository<Business>,
+[7m  [0m [91m                                            ~~~~~~~~[0m
+[96msrc/payments/payments.service.ts[0m:[93m28[0m:[93m33[0m - [91merror[0m[90m TS2304: [0mCannot find name 'StripeService'.
+
+[7m28[0m     private readonly stripeSdk: StripeService,
+[7m  [0m [91m                                ~~~~~~~~~~~~~[0m
+[96msrc/payments/payments.service.ts[0m:[93m29[0m:[93m30[0m - [91merror[0m[90m TS2304: [0mCannot find name 'BusinessAccessService'.
+
+[7m29[0m     private readonly access: BusinessAccessService,
+[7m  [0m [91m                             ~~~~~~~~~~~~~~~~~~~~~[0m
+[96msrc/payments/payments.service.ts[0m:[93m30[0m:[93m35[0m - [91merror[0m[90m TS2304: [0mCannot find name 'RentalsService'.
+
+[7m30[0m     private readonly rentalsFlow: RentalsService,
+[7m  [0m [91m                                  ~~~~~~~~~~~~~~[0m
+
+Found 14 error(s).
+
+
+---
+exit_code: 1
+elapsed_ms: 232826
+ended_at: 2026-05-01T21:23:22.223Z
+---

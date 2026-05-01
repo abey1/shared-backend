@@ -1,0 +1,13 @@
+---
+pid: 9168
+cwd: "C:\\Users\\bruck\\.cursor\\projects\\shared_backend"
+command: "powershell -Command \"Start-Sleep -Seconds 30\""
+started_at: 2026-05-01T21:22:22.063Z
+running_for_ms: 45025    
+---
+
+---
+exit_code: 0
+elapsed_ms: 45449
+ended_at: 2026-05-01T21:23:07.512Z
+---

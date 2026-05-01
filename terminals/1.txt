@@ -1,0 +1,6 @@
+---
+pid: 30904
+cwd: |
+  C:\Users\bruck\.cursor\projects\shared_backend
+---
+PS C:\Users\bruck\.cursor\projects\shared_backend>

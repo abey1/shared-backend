@@ -1,6 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import {
+  Between,
+  FindOptionsWhere,
+  LessThanOrEqual,
+  MoreThanOrEqual,
+  Repository,
+} from 'typeorm';
 import {
   BusinessUserRole,
   EquipmentListingStatus,
@@ -9,7 +15,29 @@ import { BusinessAccessService } from '../businesses/business-access.service';
 import { Equipment } from '../entities/equipment.entity';
 import { EquipmentImage } from '../entities/equipment-image.entity';
 import { BlobStorageService } from '../infra/blob-storage.service';
-import type { CreateEquipmentDto, UpdateEquipmentDto } from './dto';
+import type {
+  CreateEquipmentDto,
+  ListEquipmentQueryDto,
+  UpdateEquipmentDto,
+} from './dto';
+
+export interface EquipmentListItem {
+  id: string;
+  title: string;
+  description: string | null;
+  dailyRateCents: number;
+  currency: string;
+  listingStatus: EquipmentListingStatus;
+  images: { id: string; blobPath: string; sortOrder: number }[];
+  business: { id: string; legalName: string };
+}
+
+export interface EquipmentListResult {
+  data: EquipmentListItem[];
+  page: number;
+  limit: number;
+  total: number;
+}
 
 @Injectable()
 export class EquipmentService {
@@ -21,6 +49,55 @@ export class EquipmentService {
     private readonly access: BusinessAccessService,
     private readonly blobs: BlobStorageService,
   ) {}
+
+  async findAll(query: ListEquipmentQueryDto): Promise<EquipmentListResult> {
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 10;
+    const where: FindOptionsWhere<Equipment> = {
+      listingStatus: EquipmentListingStatus.Active,
+    };
+    if (query.businessId) {
+      where.businessId = query.businessId;
+    }
+    const { minPrice, maxPrice } = query;
+    if (minPrice !== undefined && maxPrice !== undefined) {
+      where.dailyRateCents = Between(minPrice, maxPrice);
+    } else if (minPrice !== undefined) {
+      where.dailyRateCents = MoreThanOrEqual(minPrice);
+    } else if (maxPrice !== undefined) {
+      where.dailyRateCents = LessThanOrEqual(maxPrice);
+    }
+
+    const [rows, total] = await this.equipmentRepo.findAndCount({
+      where,
+      relations: { images: true, business: true },
+      order: { createdAt: 'DESC' },
+      skip: (page - 1) * limit,
+      take: limit,
+    });
+
+    const data: EquipmentListItem[] = rows.map((e) => ({
+      id: e.id,
+      title: e.title,
+      description: e.description,
+      dailyRateCents: e.dailyRateCents,
+      currency: e.currency,
+      listingStatus: e.listingStatus,
+      images: [...(e.images ?? [])]
+        .sort((a, b) => a.sortOrder - b.sortOrder)
+        .map((i) => ({
+          id: i.id,
+          blobPath: i.blobPath,
+          sortOrder: i.sortOrder,
+        })),
+      business: {
+        id: e.business.id,
+        legalName: e.business.legalName,
+      },
+    }));
+
+    return { data, page, limit, total };
+  }
 
   async create(actorUserId: string, dto: CreateEquipmentDto): Promise<Equipment> {
     await this.access.requireMembership(

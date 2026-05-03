@@ -240,7 +240,66 @@ Lists businesses the current user belongs to.
 
 All routes: **`JWT required`**.
 
-> **Catalog gap:** There is **no** `GET /equipment` (list/search) endpoint in this codebase. Browsing “all tools” for a marketplace page **cannot** be done from this API alone until a list endpoint (or GraphQL/BFF) is added. You can still load a known item with `GET /equipment/:id`.
+### `GET /equipment`
+
+| | |
+|---|---|
+| **Auth** | **Yes** — Bearer JWT |
+| **Description** | Paginated list of **`active`** equipment listings (`listingStatus === "active"`, not soft-deleted). |
+
+**Query parameters** (`ListEquipmentQueryDto`):
+
+| Param | Type | Default | Description |
+|-------|------|---------|-------------|
+| `page` | number | `1` | Page index, integer ≥ 1 |
+| `limit` | number | `10` | Page size, 1–50 |
+| `businessId` | UUID | — | Filter by owning business |
+| `minPrice` | number | — | Minimum `dailyRateCents` (≥ 0) |
+| `maxPrice` | number | — | Maximum `dailyRateCents` (≥ 0) |
+
+**Example request**
+
+```http
+GET /equipment?page=1&limit=10&minPrice=1000&maxPrice=5000
+Authorization: Bearer <access_token>
+```
+
+**Response 200**
+
+```json
+{
+  "data": [
+    {
+      "id": "44444444-4444-4444-8444-444444444444",
+      "title": "Power Drill",
+      "description": "High torque cordless kit.",
+      "dailyRateCents": 2500,
+      "currency": "USD",
+      "listingStatus": "active",
+      "images": [
+        {
+          "id": "55555555-5555-4555-8555-555555555555",
+          "blobPath": "https://example.com/image.jpg",
+          "sortOrder": 0
+        }
+      ],
+      "business": {
+        "id": "22222222-2222-4222-8222-222222222222",
+        "legalName": "Acme Tool Rentals LLC"
+      }
+    }
+  ],
+  "page": 1,
+  "limit": 10,
+  "total": 42
+}
+```
+
+**401** — Missing or invalid JWT.
+
+**400** — Invalid query params (e.g. `limit` above 50, invalid `businessId`, non-numeric `page`).
+
+---
 
 ### `POST /equipment`
 
@@ -911,7 +970,11 @@ All routes: **`JWT required`** (class-scoped guard).
 
 ### 1) Fetch all tools
 
-**Not supported** by the current API: there is **no** catalog list endpoint. You need **known UUIDs**, a **new backend endpoint**, or another service. `GET /equipment/:id` **does** return detail including nested **`business`** and **`images`**.
+1. Obtain Entra access token; optionally call `GET /users/me` to provision the user.
+2. Call **`GET /equipment`** with `Authorization: Bearer …` and optional `page`, `limit`, `businessId`, `minPrice`, `maxPrice`.
+3. Use `data` for the current page; `total` with `limit` for pagination UI.
+
+For a single listing, use **`GET /equipment/:id`** (full entity + nested `business`).
 
 ### 2) View tool details
 
@@ -962,6 +1025,7 @@ All routes: **`JWT required`** (class-scoped guard).
 | GET | `/businesses/mine` |
 | GET | `/businesses/:id` |
 | POST | `/businesses/:id/members` |
+| GET | `/equipment` |
 | POST | `/equipment` |
 | GET | `/equipment/:id` |
 | PATCH | `/equipment/:id` |

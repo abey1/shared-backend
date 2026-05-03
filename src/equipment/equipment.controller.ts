@@ -15,7 +15,13 @@ import { CurrentUser } from '../common/decorators/current-user.decorator';
 import type { JwtPayload } from '../auth/jwt.strategy';
 import { BusinessUserRole } from '../common/enums';
 import { UsersService } from '../users/users.service';
-import { CreateEquipmentDto, RegisterImageDto, SasUploadQueryDto, UpdateEquipmentDto } from './dto';
+import {
+  CreateEquipmentDto,
+  ListEquipmentQueryDto,
+  RegisterImageDto,
+  SasUploadQueryDto,
+  UpdateEquipmentDto,
+} from './dto';
 import { EquipmentService } from './equipment.service';
 
 @Controller('equipment')
@@ -30,6 +36,15 @@ export class EquipmentController {
   async create(@CurrentUser() jwt: JwtPayload, @Body() dto: CreateEquipmentDto) {
     const user = await this.users.ensureFromJwt(jwt);
     return this.equipment.create(user.id, dto);
+  }
+
+  @Get()
+  async list(
+    @CurrentUser() jwt: JwtPayload,
+    @Query() query: ListEquipmentQueryDto,
+  ) {
+    await this.users.ensureFromJwt(jwt);
+    return this.equipment.findAll(query);
   }
 
   @Get(':id')

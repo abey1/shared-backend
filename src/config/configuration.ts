@@ -1,3 +1,11 @@
+export interface AzureAdB2CConfig {
+  tenant: string;
+  policy: string;
+  clientId: string;
+  issuer: string;
+  jwksUri: string;
+}
+
 export default () => ({
   env: process.env.NODE_ENV ?? 'development',
   port: parseInt(process.env.PORT ?? '3000', 10),
@@ -12,10 +20,11 @@ export default () => ({
   },
   azureAdB2C: {
     tenant: process.env.AZURE_AD_B2C_TENANT ?? '',
-    policy: process.env.AZURE_AD_B2C_POLICY ?? 'B2C_1_signupsignin',
+    policy: process.env.AZURE_AD_B2C_POLICY ?? '',
     clientId: process.env.AZURE_AD_B2C_CLIENT_ID ?? '',
     issuer: process.env.AZURE_AD_B2C_ISSUER ?? '',
-  },
+    jwksUri: process.env.AZURE_AD_B2C_JWKS_URI ?? '',
+  } satisfies AzureAdB2CConfig,
   jwtDevSecret: process.env.JWT_DEV_SECRET ?? '',
   stripe: {
     secretKey: process.env.STRIPE_SECRET_KEY ?? '',

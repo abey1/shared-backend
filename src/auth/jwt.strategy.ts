@@ -6,7 +6,7 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { AppRole } from '../common/enums';
 
 export interface JwtPayload {
-  /** Azure AD B2C subject */
+  /** Microsoft Entra External ID (CIAM) subject */
   sub: string;
   oid?: string;
   emails?: string[];
@@ -19,15 +19,9 @@ export interface JwtPayload {
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'azure-b2c-jwt') {
   constructor(private readonly config: ConfigService) {
-    const tenant = config.get<string>('azureAdB2C.tenant', '');
-    const policy = config.get<string>('azureAdB2C.policy', '');
     const clientId = config.get<string>('azureAdB2C.clientId', '');
-    const configuredJwks = process.env.AZURE_AD_B2C_JWKS_URI;
-    const jwksUri =
-      configuredJwks?.trim() ||
-      `https://${tenant}.b2clogin.com/${tenant}.onmicrosoft.com/${policy}/discovery/v2.0/keys`;
-
-    const issuer = config.get<string>('azureAdB2C.issuer', '');
+    const jwksUri = config.get<string>('azureAdB2C.jwksUri', '').trim();
+    const issuer = config.get<string>('azureAdB2C.issuer', '').trim();
 
     const devSecret = config.get<string>('jwtDevSecret', '');
     const useDev = config.get<string>('env') === 'development' && !!devSecret;

@@ -9,7 +9,11 @@
 
   Optional follow-ups when you populate new columns:
   - ALTER dbo.businesses ALTER COLUMN name NVARCHAR(255) NOT NULL;
-  - ALTER dbo.businesses ALTER COLUMN subdomain NVARCHAR(255) NOT NULL; (after backfill + uniqueness)
+  - ALTER dbo.businesses ALTER COLUMN subdomain NVARCHAR(255) NOT NULL; (after backfill)
+
+  Subdomain uniqueness: SQL Server treats NULL as equal for UNIQUE CONSTRAINTs, so only ONE row may have
+  NULL subdomain. We use a filtered unique INDEX (WHERE subdomain IS NOT NULL) so many rows can omit
+  subdomain until backfilled, while non-NULL values stay unique.
 */
 
 SET ANSI_NULLS ON;
@@ -51,14 +55,29 @@ BEGIN
     IF COL_LENGTH(N'dbo.businesses', N'owner_user_id') IS NULL
         ALTER TABLE dbo.businesses ADD owner_user_id UNIQUEIDENTIFIER NULL;
 
-    IF NOT EXISTS (
+    /*
+      Do NOT use UNIQUE(subdomain): duplicate NULL fails on SQL Server.
+      Filtered index allows many NULLs; enforces uniqueness only when subdomain IS NOT NULL.
+    */
+    IF EXISTS (
         SELECT 1
         FROM sys.key_constraints
         WHERE parent_object_id = OBJECT_ID(N'dbo.businesses')
           AND name = N'UQ_businesses_subdomain'
     )
-        ALTER TABLE dbo.businesses
-            ADD CONSTRAINT UQ_businesses_subdomain UNIQUE (subdomain);
+        ALTER TABLE dbo.businesses DROP CONSTRAINT UQ_businesses_subdomain;
+
+    IF EXISTS (
+        SELECT 1
+        FROM sys.indexes
+        WHERE object_id = OBJECT_ID(N'dbo.businesses')
+          AND name = N'UQ_businesses_subdomain'
+    )
+        DROP INDEX UQ_businesses_subdomain ON dbo.businesses;
+
+    CREATE UNIQUE NONCLUSTERED INDEX UQ_businesses_subdomain
+        ON dbo.businesses (subdomain)
+        WHERE subdomain IS NOT NULL;
 
     IF OBJECT_ID(N'dbo.FK_business_owner', N'F') IS NULL
         ALTER TABLE dbo.businesses
@@ -142,7 +161,7 @@ GO
      legal_name, tax_id, verification_status, stripe_connect_account_id,
      created_at, updated_at, deleted_at
    plus additive columns:
-     name, subdomain (unique where populated — nullable allows phased rollout),
+     name, subdomain (filtered unique index UQ_businesses_subdomain WHERE subdomain IS NOT NULL),
      owner_user_id (FK → users, ON DELETE SET NULL)
 
    dbo.business_users retains:

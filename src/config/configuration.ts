@@ -26,6 +26,11 @@ export default () => ({
     jwksUri: process.env.AZURE_AD_B2C_JWKS_URI ?? '',
   } satisfies AzureAdB2CConfig,
   jwtDevSecret: process.env.JWT_DEV_SECRET ?? '',
+  auth: {
+    platformAdminSubs: process.env.PLATFORM_ADMIN_SUBS ?? '',
+    platformBusinessOwnerSubs: process.env.PLATFORM_BUSINESS_OWNER_SUBS ?? '',
+    platformBusinessManagerSubs: process.env.PLATFORM_BUSINESS_MANAGER_SUBS ?? '',
+  },
   stripe: {
     secretKey: process.env.STRIPE_SECRET_KEY ?? '',
     webhookSecret: process.env.STRIPE_WEBHOOK_SECRET ?? '',

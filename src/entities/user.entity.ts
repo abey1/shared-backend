@@ -8,6 +8,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { BusinessUser } from './business-user.entity';
+import { UserIdentity } from './user-identity.entity';
 import { EquipmentCondition } from './equipment-condition.entity';
 import { Review } from './review.entity';
 import { Dispute } from './dispute.entity';
@@ -37,6 +38,9 @@ export class User {
 
   @DeleteDateColumn({ name: 'deleted_at', type: 'datetime2', nullable: true })
   deletedAt: Date | null;
+
+  @OneToMany(() => UserIdentity, (i) => i.user)
+  identities: UserIdentity[];
 
   @OneToMany(() => BusinessUser, (m) => m.user)
   businessMemberships: BusinessUser[];

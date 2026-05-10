@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { BusinessUserRole, VerificationStatus } from '../common/enums';
@@ -7,6 +11,11 @@ import { BusinessUser } from '../entities/business-user.entity';
 import { User } from '../entities/user.entity';
 import type { CreateBusinessDto } from './dto';
 import { BusinessAccessService } from './business-access.service';
+
+function normalizeSubdomain(raw: string | undefined): string | null {
+  const s = raw?.trim().toLowerCase();
+  return s?.length ? s : null;
+}
 
 @Injectable()
 export class BusinessesService {
@@ -21,10 +30,23 @@ export class BusinessesService {
   ) {}
 
   async createForUser(userId: string, dto: CreateBusinessDto): Promise<Business> {
+    const subdomain = normalizeSubdomain(dto.subdomain);
+    if (subdomain) {
+      const taken = await this.businesses.exist({ where: { subdomain } });
+      if (taken) {
+        throw new ConflictException('Subdomain already in use');
+      }
+    }
+    const name =
+      dto.name?.trim() ||
+      dto.legalName.trim();
     const b = this.businesses.create({
       legalName: dto.legalName,
       taxId: dto.taxId ?? null,
       verificationStatus: VerificationStatus.Pending,
+      name,
+      subdomain,
+      ownerUserId: userId,
     });
     const saved = await this.businesses.save(b);
     const m = this.members.create({

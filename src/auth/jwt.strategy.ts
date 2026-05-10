@@ -60,24 +60,45 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'azure-b2c-jwt') {
     if (Array.isArray(rawRoles)) {
       for (const r of rawRoles) {
         if (r === AppRole.PlatformAdmin || r === 'platform_admin')
-          roles.push(AppRole.PlatformAdmin);
+          this.pushDistinct(roles, AppRole.PlatformAdmin);
       }
     }
-    const adminSubs = (process.env.PLATFORM_ADMIN_SUBS ?? '')
-      .split(',')
-      .map((s) => s.trim())
-      .filter(Boolean);
+
+    const adminSubs = this.parseSubAllowlist('auth.platformAdminSubs');
+    const ownerSubs = this.parseSubAllowlist('auth.platformBusinessOwnerSubs');
+    const managerSubs = this.parseSubAllowlist('auth.platformBusinessManagerSubs');
+
     if (adminSubs.includes(sub)) {
       roles.length = 0;
-      roles.push(AppRole.PlatformAdmin);
-    } else if (!roles.length) {
-      roles.push(AppRole.BusinessUser);
+      this.pushDistinct(roles, AppRole.PlatformAdmin);
+    } else if (!roles.includes(AppRole.PlatformAdmin)) {
+      if (ownerSubs.includes(sub)) {
+        this.pushDistinct(roles, AppRole.BusinessOwner);
+      }
+      if (managerSubs.includes(sub)) {
+        this.pushDistinct(roles, AppRole.BusinessManager);
+      }
     }
+
+    this.pushDistinct(roles, AppRole.BusinessUser);
     return {
       sub,
       oid: payload.oid as string | undefined,
       emails: payload.emails as string[] | undefined,
       roles,
     };
+  }
+
+  private parseSubAllowlist(configKey: string): string[] {
+    return (this.config.get<string>(configKey) ?? '')
+      .split(',')
+      .map((s: string) => s.trim())
+      .filter(Boolean);
+  }
+
+  private pushDistinct(roles: AppRole[], role: AppRole): void {
+    if (!roles.includes(role)) {
+      roles.push(role);
+    }
   }
 }

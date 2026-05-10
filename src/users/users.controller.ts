@@ -12,10 +12,19 @@ export class UsersController {
   @Get('me')
   async me(@CurrentUser() jwt: JwtPayload) {
     const user = await this.users.ensureFromJwt(jwt);
+    const full = await this.users.findByIdWithIdentities(user.id);
+    const identities = full?.identities ?? [];
     return {
       id: user.id,
       email: user.email,
       displayName: user.displayName,
+      identities: identities.map((i) => ({
+        id: i.id,
+        provider: i.provider,
+        providerUserId: i.providerUserId,
+        providerEmail: i.providerEmail,
+        createdAt: i.createdAt,
+      })),
     };
   }
 }

@@ -67,4 +67,6 @@ export enum DisputeStatus {
 export enum AppRole {
   PlatformAdmin = 'platform_admin',
   BusinessUser = 'business_user',
+  BusinessOwner = 'business_owner',
+  BusinessManager = 'business_manager',
 }

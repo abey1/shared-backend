@@ -19,17 +19,43 @@ export class UsersService {
 
   async ensureFromJwt(payload: JwtPayload): Promise<User> {
     const oid = payload.oid ?? payload.sub;
+    const emailFromJwt =
+      payload.primaryEmail ?? payload.emails?.[0]?.toLowerCase() ?? null;
+    const tokenDisplay =
+      payload.displayName?.trim() ||
+      (emailFromJwt ? emailFromJwt.split('@')[0] : null);
+    const placeholderEmail = `${oid.replace(/[^a-zA-Z0-9]/g, '')}@users.b2c.local`;
+    const email = emailFromJwt ?? placeholderEmail;
+    const displayName =
+      tokenDisplay?.trim() ||
+      emailFromJwt?.split('@')[0]?.trim() ||
+      'User';
+
     const existing = await this.users.findOne({
       where: { azureAdB2cOid: oid },
     });
     let user: User;
     if (existing) {
       user = existing;
+      let dirty = false;
+      if (displayName && user.displayName !== displayName) {
+        user.displayName = displayName;
+        dirty = true;
+      }
+      const isPlaceholderEmail = user.email.endsWith('@users.b2c.local');
+      if (emailFromJwt && isPlaceholderEmail && emailFromJwt !== user.email) {
+        const clash = await this.users.findOne({
+          where: { email: emailFromJwt },
+        });
+        if (!clash || clash.id === user.id) {
+          user.email = emailFromJwt;
+          dirty = true;
+        }
+      }
+      if (dirty) {
+        user = await this.users.save(user);
+      }
     } else {
-      const email =
-        payload.emails?.[0]?.toLowerCase() ??
-        `${oid.replace(/[^a-zA-Z0-9]/g, '')}@users.b2c.local`;
-      const displayName = email.split('@')[0] ?? 'User';
       user = await this.users.save(
         this.users.create({
           azureAdB2cOid: oid,
@@ -38,7 +64,7 @@ export class UsersService {
         }),
       );
     }
-    await this.syncExternalIdentity(user, oid, payload.emails?.[0]?.toLowerCase() ?? null);
+    await this.syncExternalIdentity(user, oid, emailFromJwt);
     return user;
   }
 

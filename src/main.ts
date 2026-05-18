@@ -16,7 +16,11 @@ async function bootstrap() {
       forbidUnknownValues: true,
     }),
   );
-  app.enableCors({ origin: true });
+  app.enableCors({
+    origin: true,
+    methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Authorization', 'Content-Type', 'Accept'],
+  });
   const port = process.env.PORT ?? 3000;
   await app.listen(port);
 }
